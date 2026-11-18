@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0f1218">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>课堂同传 · 理工术语</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --bg:#0b0e14;--surface:#141922;--surface-2:#1c2330;--surface-3:#252e3d;
+  --text:#e4e8f0;--dim:#7d8a9e;--border:#28303e;
+  --accent:#4da3ff;--accent-soft:#1a3350;
+  --term-bg:#2e2500;--term:#ffd166;
+  --ok:#3ddc84;--err:#ff6b6b;--warn:#ffb347;
+  --radius:14px;--nav-h:60px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","PingFang SC",sans-serif;
+  font-size:15px;overscroll-behavior:none}
+body{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom))}
+button,input,textarea,select{font-family:inherit;font-size:inherit}
+button{cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{width:100%;background:var(--surface-2);border:1px solid var(--border);
+  color:var(--text);border-radius:9px;padding:10px 12px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+
+/* 布局 */
+.page{display:none;padding:14px;max-width:760px;margin:0 auto}
+.page.active{display:block}
+.page-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.page-head h1{font-size:19px;margin:0;flex:1;font-weight:650;letter-spacing:.01em}
+
+/* 卡片 */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden}
+.card-pad{padding:14px}
+.card + .card{margin-top:10px}
+
+/* 按钮 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 15px;border-radius:999px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text);font-size:13px;font-weight:550;
+  transition:filter .15s,background .15s;white-space:nowrap}
+.btn:active{filter:brightness(.9)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06101d;font-weight:750}
+.btn.danger{background:transparent;border-color:var(--err);color:var(--err)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 11px;font-size:12px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.35;pointer-events:none}
+
+/* 实时页 */
+.rec-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.rec-bar .btn{flex:1}
+.status{font-size:12px;color:var(--dim);display:flex;align-items:center;gap:6px;
+  min-height:18px;margin-bottom:8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.dot.live{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.dot.err{background:var(--err)}
+
+.caption-box{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);min-height:300px;max-height:calc(100vh - 330px);
+  overflow-y:auto;padding:6px 0}
+.seg{padding:11px 15px;border-bottom:1px solid rgba(255,255,255,.035)}
+.seg:last-child{border-bottom:none}
+.seg .ko{font-size:13px;color:var(--dim);line-height:1.55;margin-bottom:3px}
+.seg .zh{font-size:15.5px;line-height:1.65}
+.seg.interim .ko,.seg.interim .zh{opacity:.5}
+mark.term{background:var(--term-bg);color:var(--term);border-radius:4px;
+  padding:0 3px;font-weight:650;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.empty{padding:50px 20px;text-align:center;color:var(--dim);font-size:13px;line-height:1.9}
+
+/* 悬浮 */
+#floatCard{position:fixed;z-index:9998;width:min(88vw,400px);
+  background:rgba(11,14,20,.93);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.55);display:none;flex-direction:column;
+  overflow:hidden;touch-action:none;user-select:none}
+#floatCard.show{display:flex}
+.float-head{display:flex;align-items:center;gap:5px;padding:7px 10px;
+  background:rgba(255,255,255,.04);cursor:grab;font-size:11px;color:var(--dim)}
+.float-head:active{cursor:grabbing}
+.float-head .grow{flex:1}
+.float-body{padding:9px 13px 12px;font-size:13px;line-height:1.6;
+  max-height:36vh;overflow-y:auto;pointer-events:none}
+.float-body .fko{color:var(--dim);font-size:11px;margin-bottom:3px}
+.resize-grip{position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize;
+  background:linear-gradient(135deg,transparent 50%,var(--border) 50%,var(--border) 62%,transparent 62%)}
+.float-fab{position:fixed;right:16px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);
+  z-index:9999;width:48px;height:48px;border-radius:50%;background:var(--accent);
+  color:#06101d;font-weight:800;font-size:15px;display:none;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(77,163,255,.4)}
+.float-fab.show{display:flex}
+
+/* 底部导航 */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:1000;height:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);background:rgba(15,18,24,.94);
+  backdrop-filter:blur(18px);border-top:1px solid var(--border);
+  display:flex;justify-content:space-around;align-items:center}
+.nav button{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;font-size:10px;color:var(--dim);font-weight:550}
+.nav button.active{color:var(--accent)}
+.nav svg{width:21px;height:21px}
+
+/* 归档 */
+.filter-row{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.filter-row select{flex:1;min-width:120px;padding:8px 10px;font-size:13px}
+.session-item{display:flex;align-items:center;gap:11px;padding:13px 15px;
+  border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer}
+.session-item:last-child{border-bottom:none}
+.session-item:active{background:var(--surface-2)}
+.si-icon{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.si-body{flex:1;min-width:0}
+.si-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-sub{font-size:11.5px;color:var(--dim);margin-top:2px}
+.badge{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:650}
+.badge.done{background:rgba(61,220,132,.13);color:var(--ok)}
+.badge.pending{background:rgba(255,179,71,.13);color:var(--warn)}
+.badge.none{background:var(--surface-3);color:var(--dim)}
+
+/* 课程表 */
+.course-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.course-row:last-child{border-bottom:none}
+.course-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.course-info{flex:1;min-width:0}
+.course-name{font-size:14px;font-weight:600}
+.course-slots{font-size:11.5px;color:var(--dim);margin-top:2px;line-height:1.5}
+
+/* 设置 */
+.set-item{padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.set-item:last-child{border-bottom:none}
+.set-item label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.set-item .hint{font-size:11px;color:var(--dim);line-height:1.6;margin-top:5px}
+
+/* 详情 */
+.detail-sec{margin-bottom:12px}
+.detail-sec h3{font-size:12px;color:var(--dim);letter-spacing:.05em;text-transform:uppercase;
+  margin:0 0 8px;font-weight:700}
+.audio-player{width:100%;height:42px;margin-bottom:8px;border-radius:9px}
+.summary-block{background:var(--surface-2);border-radius:10px;padding:13px;margin-bottom:9px}
+.summary-block h4{margin:0 0 7px;font-size:13px;color:var(--accent)}
+.summary-block ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.75}
+.summary-block li{margin-bottom:4px}
+.term-pill{display:inline-flex;align-items:center;gap:5px;background:var(--surface-3);
+  border-radius:999px;padding:5px 11px;font-size:12px;margin:0 6px 6px 0}
+.term-pill.mastered{border:1px solid rgba(61,220,132,.35)}
+.term-pill.pending{border:1px solid rgba(255,179,71,.35)}
+
+/* 弹层 */
+.modal-mask{position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.6);
+  display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal-mask.show{display:flex}
+.modal{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:640px;
+  max-height:88vh;overflow-y:auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.modal h2{font-size:16px;margin:0 0 14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Toast */
+#toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 22px);transform:translateX(-50%) translateY(10px);
+  background:var(--surface-3);color:var(--text);padding:10px 18px;border-radius:999px;
+  font-size:13px;z-index:12000;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap;max-width:92vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:480px){
+  .page{padding:11px}
+  .caption-box{max-height:calc(100vh - 310px)}
+  .row-2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 实时 ================= -->
+<div class="page active" id="pageLive">
+  <div class="page-head"><h1>课堂同传</h1>
+    <button class="btn sm ghost" id="btnDict">术语库</button>
+    <button class="btn sm ghost" id="btnFloatToggle">悬浮</button>
+  </div>
+  <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">就绪</span></div>
+  <div class="rec-bar">
+    <button class="btn primary" id="btnStart">🎙 开始收音</button>
+    <button class="btn ghost sm" id="btnExportLive" style="flex:0 0 auto">导出</button>
+  </div>
+  <div class="caption-box" id="captionBox">
+    <div class="empty" id="emptyHint">点击「开始收音」<br>韩语原文与中文译文将逐句显示<br><span style="font-size:11px;opacity:.7">建议使用 Chrome / Edge 获得最佳识别效果</span></div>
+  </div>
+</div>
+
+<!-- ================= 归档 ================= -->
+<div class="page" id="pageArchive">
+  <div class="page-head"><h1>课时记录</h1></div>
+  <div class="filter-row">
+    <select id="filterCourse"><option value="">全部课程</option></select>
+    <input type="date" id="filterDateFrom" style="flex:0 0 auto;width:auto" title="起始日期">
+    <input type="date" id="filterDateTo" style="flex:0 0 auto;width:auto" title="结束日期">
+  </div>
+  <div class="card" id="sessionList"></div>
+</div>
+
+<!-- ================= 课程表 ================= -->
+<div class="page" id="pageCourses">
+  <div class="page-head"><h1>课程表</h1>
+    <button class="btn sm primary" id="btnAddCourse">＋ 新增课程</button>
+  </div>
+  <div class="card" id="courseList"></div>
+</div>
+
+<!-- ================= 设置 ================= -->
+<div class="page" id="pageSettings">
+  <div class="page-head"><h1>设置</h1></div>
+  <div class="card card-pad">
+    <div class="set-item">
+      <label>学期开始日期</label>
+      <input type="date" id="setSemesterStart">
+      <div class="hint">用于推算课程表周次。例如第 1 周从 9 月 1 日开始。</div>
+    </div>
+    <div class="set-item">
+      <label>LLM API Base URL</label>
+      <input id="setLlmBase" placeholder="https://api.openai.com/v1">
+      <div class="hint">任何 OpenAI 兼容接口，例如 DeepSeek、Moonshot、本地 Ollama。保存在本机浏览器，不会上传。</div>
+    </div>
+    <div class="set-item">
+      <label>LLM API Key</label>
+      <input id="setLlmKey" type="password" placeholder="sk-...">
+    </div>
+    <div class="set-item">
+      <label>LLM 模型名</label>
+      <input id="setLlmModel" placeholder="gpt-4o-mini / deepseek-chat">
+    </div>
+    <div class="set-item">
+      <label>翻译方式</label>
+      <select id="setTranslateMode">
+        <option value="llm">LLM 逐句翻译（推荐，需上方 Key）</option>
+        <option value="term-only">仅术语映射（离线，不调用外部 API）</option>
+      </select>
+      <div class="hint">术语映射模式下，未命中术语的句子保留韩语原文。LLM 模式下每句调用一次翻译，速度取决于你的 API。</div>
+    </div>
+    <div class="set-item">
+      <label>数据管理</label>
+      <button class="btn sm danger" id="btnClearAllData" style="margin-top:6px">清空本机所有课堂数据</button>
+      <div class="hint" style="margin-top:8px">音频以分片形式存储在 IndexedDB。Safari 对单站点约有 50MB 上限，存储接近上限时请及时导出后清理旧课时。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部导航 -->
+<nav class="nav">
+  <button class="active" data-page="pageLive">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+    实时
+  </button>
+  <button data-page="pageArchive">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    记录
+  </button>
+  <button data-page="pageCourses">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    课程
+  </button>
+  <button data-page="pageSettings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    设置
+  </button>
+</nav>
+
+<!-- 悬浮字幕 -->
+<div id="floatCard">
+  <div class="float-head" id="floatHead"><span>悬浮字幕</span><span class="grow"></span>
+    <button id="floatClose" style="padding:2px 7px;font-size:12px">✕</button></div>
+  <div class="float-body"><div class="fko" id="floatKo">—</div><div id="floatZh">等待识别…</div></div>
+  <div class="resize-grip" id="resizeGrip"></div>
+</div>
+<button class="float-fab" id="floatFab">字</button>
+
+<!-- 通用弹层 -->
+<div class="modal-mask" id="modalMask"><div class="modal" id="modalBody"></div></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   0. 工具
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const toast = (msg, ms=2200) => {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer); t._timer = setTimeout(()=>t.classList.remove('show'), ms);
+};
+const esc = s => String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtTime = ts => { const d=new Date(ts); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+const fmtDate = ts => { const d=new Date(ts); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const uid = p => p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function download(name, text, mime='text/plain;charset=utf-8'){
+  const blob = new Blob([text],{type:mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ============================================================
+   1. IndexedDB 封装
+   ============================================================ */
+const DB_NAME='classroom_interpreter_db', DB_VER=1;
+let _db=null;
+function openDB(){
+  if(_db) return Promise.resolve(_db);
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open(DB_NAME, DB_VER);
+    r.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('sessions')){
+        const s = db.createObjectStore('sessions',{keyPath:'id'});
+        s.createIndex('date','date'); s.createIndex('courseId','courseId');
+      }
+      if(!db.objectStoreNames.contains('captions')){
+        const c = db.createObjectStore('captions',{keyPath:'id'});
+        c.createIndex('sessionId','sessionId');
+      }
+      if(!db.objectStoreNames.contains('audioChunks')){
+        const a = db.createObjectStore('audioChunks',{keyPath:'id'});
+        a.createIndex('sessionId','sessionId');
+        a.createIndex('session_seq',['sessionId','seq']);
+      }
+      if(!db.objectStoreNames.contains('summaries')){
+        const m = db.createObjectStore('summaries',{keyPath:'sessionId'});
+      }
+    };
+    r.onsuccess = e => { _db=e.target.result; res(_db); };
+    r.onerror = e => rej(e.target.error);
+  });
+}
+async function idb(store, mode, fn){
+  const db = await openDB();
+  return new Promise((res,rej)=>{
+    const tx = db.transaction(store,mode);
+    const s = tx.objectStore(store);
+    let out;
+    try{ out = fn(s); }catch(e){ rej(e); return; }
+    tx.oncomplete = ()=>res(out && out._req ? out._req.result : out);
+    tx.onerror = e=>rej(e.target.error);
+    tx.onabort = e=>rej(e.target.error);
+  });
+}
+const idbPut = (store,val)=>idb(store,'readwrite',s=>s.put(val));
+const idbAdd = (store,val)=>idb(store,'readwrite',s=>s.add(val));
+const idbGet = (store,key)=>idb(store,'readonly',s=>s.get(key));
+const idbDel = (store,key)=>idb(store,'readwrite',s=>s.delete(key));
+async function idbAllByIndex(store,index,key){
+  const db = await openDB();
+  return new Promise((res,rej)=>{
+    const r = db.transaction(store,'readonly').objectStore(store).index(index).getAll(key);
+    r.onsuccess=()=>res(r.result||[]); r.onerror=e=>rej(e.target.error);
+  });
+}
+async function idbAll(store){
+  const db = await openDB();
+  return new Promise((res,rej)=>{
+    const r = db.transaction(store,'readonly').objectStore(store).getAll();
+    r.onsuccess=()=>res(r.result||[]); r.onerror=e=>rej(e.target.error);
+  });
+}
+
+/* ============================================================
+   2. 本地配置与课程
+   ============================================================ */
+const LS = {
+  get: (k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set: (k,v)=>localStorage.setItem(k,JSON.stringify(v))
+};
+let settings = LS.get('ci_settings', {
+  semesterStart:'', llmBase:'', llmKey:'', llmModel:'', translateMode:'llm'
+});
+let customDict = LS.get('ci_custom_dict', []);
+let courses = LS.get('ci_courses', []);        // [{id,name,color,slots:[{weekday,startMin,endMin,fromWeek,toWeek,parity}]}]
+let matchPrefs = LS.get('ci_match_prefs', []); // [{key,courseId,lastUsed}]
+
+const COURSE_COLORS = ['#4da3ff','#3ddc84','#ffd166','#ff8fab','#c3a6ff','#5eead4','#fca5a5','#93c5fd'];
+function saveSettings(){ LS.set('ci_settings',settings); }
+function saveCourses(){ LS.set('ci_courses',courses); }
+function saveDict(){ LS.set('ci_custom_dict',customDict); }
+
+/* ============================================================
+   3. 术语库
+   ============================================================ */
+const BUILTIN_TERMS = [
+  // 制药工程
+  {ko:['정제','정제품','정제정'],zh:'片剂',subject:'制药工程'},
+  {ko:['과립','과립제'],zh:'颗粒剂',subject:'制药工程'},
+  {ko:['캡슐','캡슐제'],zh:'胶囊剂',subject:'制药工程'},
+  {ko:['주사제'],zh:'注射剂',subject:'制药工程'},
+  {ko:['연고','연고제'],zh:'软膏剂',subject:'制药工程'},
+  {ko:['현탁액','현탁제'],zh:'混悬剂',subject:'制药工程'},
+  {ko:['유제','에멀전'],zh:'乳剂',subject:'制药工程'},
+  {ko:['붕해','붕해제'],zh:'崩解 / 崩解剂',subject:'制药工程'},
+  {ko:['용출','용출률'],zh:'溶出 / 溶出度',subject:'制药工程'},
+  {ko:['생체이용률'],zh:'生物利用度',subject:'制药工程'},
+  {ko:['반감기'],zh:'半衰期',subject:'制药工程'},
+  {ko:['부형제'],zh:'赋形剂',subject:'制药工程'},
+  {ko:['결합제'],zh:'黏合剂',subject:'制药工程'},
+  {ko:['활택제'],zh:'润滑剂',subject:'制药工程'},
+  {ko:['무균','무균공정'],zh:'无菌 / 无菌工艺',subject:'制药工程'},
+  {ko:['동결건조'],zh:'冷冻干燥',subject:'制药工程'},
+  {ko:['과립화'],zh:'制粒',subject:'制药工程'},
+  {ko:['타정'],zh:'压片',subject:'制药工程'},
+  // 生物
+  {ko:['단백질'],zh:'蛋白质',subject:'生物'},
+  {ko:['효소'],zh:'酶',subject:'生物'},
+  {ko:['기질'],zh:'底物',subject:'生物'},
+  {ko:['수용체'],zh:'受体',subject:'生物'},
+  {ko:['유전자'],zh:'基因',subject:'生物'},
+  {ko:['전사','전사과정'],zh:'转录',subject:'生物'},
+  {ko:['번역','번역과정'],zh:'翻译（生物学）',subject:'生物'},
+  {ko:['세포막'],zh:'细胞膜',subject:'生物'},
+  {ko:['미토콘드리아'],zh:'线粒体',subject:'生物'},
+  {ko:['리보솜'],zh:'核糖体',subject:'生物'},
+  {ko:['항체'],zh:'抗体',subject:'生物'},
+  {ko:['항원'],zh:'抗原',subject:'生物'},
+  {ko:['대사','대사과정'],zh:'代谢',subject:'生物'},
+  {ko:['발현','유전자발현'],zh:'表达 / 基因表达',subject:'生物'},
+  {ko:['돌연변이'],zh:'突变',subject:'生物'},
+  {ko:['세포분열'],zh:'细胞分裂',subject:'生物'},
+  // 化学
+  {ko:['환원력'],zh:'还原力',subject:'化学'},
+  {ko:['산화력'],zh:'氧化力',subject:'化学'},
+  {ko:['촉매'],zh:'催化剂',subject:'化学'},
+  {ko:['용매'],zh:'溶剂',subject:'化学'},
+  {ko:['용질'],zh:'溶质',subject:'化学'},
+  {ko:['몰농도'],zh:'摩尔浓度',subject:'化学'},
+  {ko:['화학결합'],zh:'化学键',subject:'化学'},
+  {ko:['이온결합'],zh:'离子键',subject:'化学'},
+  {ko:['공유결합'],zh:'共价键',subject:'化学'},
+  {ko:['수소결합'],zh:'氢键',subject:'化学'},
+  {ko:['발열반응'],zh:'放热反应',subject:'化学'},
+  {ko:['흡열반응'],zh:'吸热反应',subject:'化学'},
+  {ko:['중화반응'],zh:'中和反应',subject:'化学'},
+  {ko:['치환반응'],zh:'取代反应',subject:'化学'},
+  {ko:['첨가반응'],zh:'加成反应',subject:'化学'},
+  {ko:['유기화합물'],zh:'有机化合物',subject:'化学'},
+  {ko:['무기화합물'],zh:'无机化合物',subject:'化学'},
+  {ko:['분자량'],zh:'分子量',subject:'化学'},
+  {ko:['화학평형'],zh:'化学平衡',subject:'化学'}
+];
+
+function buildKoIndex(){
+  const entries=[];
+  [...customDict,...BUILTIN_TERMS].forEach(item=>{
+    (item.ko||[]).forEach(k=>{ const s=k.trim(); if(s) entries.push({surface:s,zh:item.zh,subject:item.subject||''}); });
+  });
+  entries.sort((a,b)=>b.surface.length-a.surface.length);
+  return entries;
+}
+let koIndex = buildKoIndex();
+function refreshKoIndex(){ koIndex = buildKoIndex(); }
+
+function findTermHits(ko){
+  const hits=[]; const used=new Array(ko.length).fill(false);
+  for(const e of koIndex){
+    let start=0;
+    while(true){
+      const i=ko.indexOf(e.surface,start); if(i===-1) break;
+      const end=i+e.surface.length; let overlap=false;
+      for(let j=i;j<end;j++){ if(used[j]){overlap=true;break;} }
+      if(!overlap){ for(let j=i;j<end;j++) used[j]=true; hits.push({start:i,end,zh:e.zh,ko:e.surface}); }
+      start=i+1;
+    }
+  }
+  hits.sort((a,b)=>a.start-b.start); return hits;
+}
+function highlightKo(ko,hits){
+  if(!hits.length) return esc(ko);
+  let html='',last=0;
+  hits.forEach(h=>{ html+=esc(ko.slice(last,h.start))+'<mark class="term">'+esc(ko.slice(h.start,h.end))+'</mark>'; last=h.end; });
+  return html+esc(ko.slice(last));
+}
+function highlightZh(zh,hits){
+  if(!hits.length) return esc(zh);
+  const terms=[...new Set(hits.map(h=>h.zh).filter(Boolean))].sort((a,b)=>b.length-a.length);
+  let html=esc(zh);
+  terms.forEach(t=>{
+    const re=new RegExp('('+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','g');
+    html=html.replace(re,'<mark class="term">$1</mark>');
+  });
+  return html;
+}
+
+/* ============================================================
+   4. 翻译层
+   ============================================================ */
+async function translateLine(ko, hits){
+  // 术语映射兜底
+  const termMap = hits.length
+    ? '【术语】'+[...new Set(hits.map(h=>h.zh))].join(' / ')
+    : '';
+
+  if(settings.translateMode==='term-only' || !settings.llmKey || !settings.llmBase){
+    return termMap || '【待翻译】'+ko;
+  }
+
+  try{
+    const termHint = hits.length ? '已知术语标准译名：'+hits.map(h=>`${h.ko}→${h.zh}`).join('；')+'\n' : '';
+    const res = await fetch(settings.llmBase.replace(/\/+$/,'')+'/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+settings.llmKey},
+      body:JSON.stringify({
+        model: settings.llmModel || 'gpt-4o-mini',
+        messages:[
+          {role:'system',content:'你是韩中理工科课堂翻译。将韩语逐句翻译成简洁准确的中文。专业术语必须使用给定的标准译名。只输出译文，不要解释。'},
+          {role:'user',content:termHint+'韩语：'+ko}
+        ],
+        temperature:0.1,
+        max_tokens:300
+      })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content?.trim();
+    return text || termMap || ko;
+  }catch(e){
+    console.warn('翻译失败', e);
+    return (termMap ? termMap+'  ·  ' : '')+'[翻译失败] '+ko;
+  }
+}
+
+/* ============================================================
+   5. 实时录音与字幕
+   ============================================================ */
+let rec = null;                // SpeechRecognition
+let mediaRecorder = null;
+let mediaStream = null;
+let isRecording = false;
+let shouldRestart = false;
+let restartTimer = null;
+let currentSessionId = null;
+let recordingStartAt = 0;      // performance.now() 时钟原点
+let chunkSeq = 0;
+let currentSegments = [];      // {id,ko,zh,startMs,seq,termHits}
+let interimEl = null;
+let summaryInFlight = new Set();
+
+const captionBox = $('#captionBox');
+const statusText = $('#statusText');
+const statusDot = $('#statusDot');
+const btnStart = $('#btnStart');
+
+function setStatus(text, type=''){
+  statusText.textContent = text;
+  statusDot.className = 'dot'+(type?' '+type:'');
+}
+
+function pickMime(){
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4;codecs=mp4a.40.2',
+    'audio/mp4',
+    'audio/ogg;codecs=opus'
+  ];
+  for(const c of candidates){ if(MediaRecorder.isTypeSupported(c)) return c; }
+  return '';
+}
+
+async function startRecording(){
+  if(isRecording) return;
+
+  // 1. 麦克风
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,channelCount:1}});
+  }catch(e){
+    setStatus('麦克风权限被拒绝','err'); toast('请允许麦克风权限'); return;
+  }
+
+  // 2. 创建 session
+  currentSessionId = uid('s');
+  recordingStartAt = performance.now();
+  chunkSeq = 0;
+  currentSegments = [];
+  captionBox.innerHTML = '';
+  $('#emptyHint')?.remove();
+  $('#floatKo').textContent='—'; $('#floatZh').textContent='等待识别…';
+
+  // 3. MediaRecorder 分片录音
+  const mime = pickMime();
+  try{
+    mediaRecorder = new MediaRecorder(mediaStream, mime?{mimeType:mime}:undefined);
+  }catch(e){
+    mediaRecorder = new MediaRecorder(mediaStream);
+  }
+  mediaRecorder.ondataavailable = async ev => {
+    if(!ev.data || ev.data.size===0) return;
+    const seq = chunkSeq++;
+    const startMs = Math.round(performance.now() - recordingStartAt);
+    try{
+      const buf = await ev.data.arrayBuffer();
+      await idbPut('audioChunks',{
+        id: currentSessionId+'_'+seq,
+        sessionId: currentSessionId,
+        seq, startMs,
+        mime: mediaRecorder.mimeType || mime || 'audio/webm',
+        data: buf
+      });
+    }catch(err){ console.warn('音频分片保存失败', err); }
+  };
+  mediaRecorder.start(5000); // 每5秒一片
+
+  // 4. SpeechRecognition
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SR){
+    rec = new SR();
+    rec.lang = 'ko-KR';
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    rec.onresult = onSpeechResult;
+    rec.onerror = e => {
+      if(['no-speech','aborted'].includes(e.error)) return;
+      if(e.error==='not-allowed'){ setStatus('识别权限被拒绝','err'); shouldRestart=false; return; }
+      setStatus('识别错误：'+e.error,'err');
+    };
+    rec.onend = () => {
+      if(shouldRestart && isRecording){
+        clearTimeout(restartTimer);
+        restartTimer = setTimeout(()=>{ try{ rec.start(); }catch(e){} }, 400);
+      }
+    };
+    try{ rec.start(); }catch(e){ console.warn('SR start', e); }
+    setStatus('正在收音 · 韩语识别中','live');
+  }else{
+    setStatus('当前浏览器不支持韩语识别，仅录音','err');
+    toast('此浏览器不支持语音识别，音频仍会保存');
+  }
+
+  isRecording = true;
+  shouldRestart = true;
+  btnStart.textContent = '⏹ 停止并保存';
+  btnStart.classList.add('danger');
+  btnStart.classList.remove('primary');
+}
+
+let segSeq = 0;
+async function onSpeechResult(event){
+  let interim='', final='';
+  for(let i=event.resultIndex;i<event.results.length;i++){
+    const r=event.results[i]; const t=r[0].transcript;
+    if(r.isFinal) final+=t; else interim+=t;
+  }
+  if(interim) showInterim(interim);
+  if(final.trim()){
+    if(interimEl){ interimEl.remove(); interimEl=null; }
+    await commitSegment(final.trim());
+  }
+}
+
+function showInterim(text){
+  if(!interimEl){
+    interimEl=document.createElement('div');
+    interimEl.className='seg interim';
+    captionBox.appendChild(interimEl);
+  }
+  interimEl.innerHTML='<div class="ko">'+esc(text)+'</div><div class="zh">识别中…</div>';
+  captionBox.scrollTop=captionBox.scrollHeight;
+}
+
+async function commitSegment(ko){
+  const startMs = Math.round(performance.now() - recordingStartAt);
+  const hits = findTermHits(ko);
+  const zh = await translateLine(ko, hits);
+  const seg = {id:uid('c'),sessionId:currentSessionId,seq:segSeq++,ko,zh,startMs,hits};
+  currentSegments.push(seg);
+  await idbPut('captions',seg);
+
+  const div=document.createElement('div');
+  div.className='seg'; div.dataset.id=seg.id;
+  div.innerHTML=`<div class="ko">${highlightKo(ko,hits)}</div><div class="zh">${highlightZh(zh,hits)}</div>`;
+  captionBox.appendChild(div);
+  captionBox.scrollTop=captionBox.scrollHeight;
+
+  $('#floatKo').textContent = ko;
+  $('#floatZh').innerHTML = highlightZh(zh,hits);
+}
+
+async function stopRecording(){
+  shouldRestart=false; isRecording=false;
+  clearTimeout(restartTimer);
+  if(rec){ try{rec.stop();}catch(e){} rec=null; }
+  if(mediaRecorder && mediaRecorder.state!=='inactive'){
+    await new Promise(res=>{
+      mediaRecorder.onstop=res;
+      try{ mediaRecorder.stop(); }catch(e){ res(); }
+    });
+  }
+  if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+  mediaRecorder=null;
+
+  btnStart.textContent='🎙 开始收音';
+  btnStart.classList.add('primary'); btnStart.classList.remove('danger');
+
+  if(currentSessionId && currentSegments.length>0){
+    await finalizeSession();
+  }else{
+    setStatus('已停止 · 无识别内容');
+    if(currentSessionId) await idbDel('sessions', currentSessionId).catch(()=>{});
+  }
+}
+
+async function finalizeSession(){
+  const endAt = Date.now();
+  const startAt = endAt - Math.round(performance.now() - recordingStartAt);
+  const date = fmtDate(startAt);
+
+  // 课程匹配
+  const matched = matchCourse(endAt);
+  const courseId = matched.courseId || '';
+  const session = {
+    id: currentSessionId,
+    courseId,
+    date,
+    startAt, endAt,
+    durationSec: Math.round((endAt-startAt)/1000),
+    autoMatched: !!matched.auto,
+    captionCount: currentSegments.length,
+    termIds: [...new Set(currentSegments.flatMap(s=>s.hits.map(h=>h.ko)))],
+    summaryStatus: 'pending',
+    createdAt: Date.now()
+  };
+  await idbPut('sessions',session);
+  setStatus('已保存 · '+(courseId?courseName(courseId):'未归类'), '');
+  toast('课时已保存'+(courseId?'，已归入「'+courseName(courseId)+'」':'，待手动归类'));
+
+  // 自动触发总结（异步，不阻塞 UI）
+  if(settings.llmKey && settings.llmBase){
+    generateSummary(session.id).catch(e=>console.warn('自动总结失败', e));
+  }
+
+  currentSessionId=null; currentSegments=[]; segSeq=0;
+  renderArchive();
+}
+
+/* ============================================================
+   6. 课程匹配
+   ============================================================ */
+function courseName(id){ return courses.find(c=>c.id===id)?.name || '未命名课程'; }
+
+function semesterWeek(date){
+  if(!settings.semesterStart) return null;
+  const start=new Date(settings.semesterStart+'T00:00:00');
+  const diff=Math.floor((new Date(date.getFullYear(),date.getMonth(),date.getDate())-start)/86400000);
+  return diff>=0 ? Math.floor(diff/7)+1 : null;
+}
+
+function matchCourse(endTs){
+  const d = new Date(endTs);
+  const weekday = d.getDay();
+  const endMin = d.getHours()*60 + d.getMinutes();
+  const week = semesterWeek(d);
+
+  const candidates=[];
+  courses.forEach(c=>{
+    (c.slots||[]).forEach(sl=>{
+      if(sl.weekday!==weekday) return;
+      // 录音结束时间落在时段内，或结束前 15 分钟内开始（课尾）
+      const inSlot = endMin>=sl.startMin && endMin<=sl.endMin+10;
+      if(!inSlot) return;
+      if(week!==null && (week<sl.fromWeek || week>sl.toWeek)) return;
+      if(sl.parity==='odd' && week%2===0) return;
+      if(sl.parity==='even' && week%2===1) return;
+      candidates.push({courseId:c.id, auto:true});
+    });
+  });
+
+  if(candidates.length===1) return candidates[0];
+
+  // 偏好记忆：同 weekday + 小时段
+  const prefKey = weekday+'_'+Math.floor(endMin/60);
+  const pref = matchPrefs.filter(p=>p.key===prefKey).sort((a,b)=>b.lastUsed-a.lastUsed)[0];
+  if(pref) return {courseId:pref.courseId, auto:false, fromPref:true};
+
+  return {courseId:null, auto:false};
+}
+
+function rememberMatchPref(endTs, courseId){
+  const d=new Date(endTs); const key=d.getDay()+'_'+Math.floor((d.getHours()*60+d.getMinutes())/60);
+  matchPrefs = matchPrefs.filter(p=>!(p.key===key && p.courseId===courseId));
+  matchPrefs.unshift({key,courseId,lastUsed:Date.now()});
+  matchPrefs=matchPrefs.slice(0,50);
+  LS.set('ci_match_prefs',matchPrefs);
+}
+
+/* ============================================================
+   7. LLM 总结
+   ============================================================ */
+async function generateSummary(sessionId){
+  if(summaryInFlight.has(sessionId)) return;
+  summaryInFlight.add(sessionId);
+  try{
+    const existing = await idbGet('summaries',sessionId);
+    if(existing?.content) return existing;
+
+    const s = await idbGet('sessions',sessionId);
+    if(!s) throw new Error('session not found');
+    const caps = (await idbAllByIndex('captions','sessionId',sessionId)).sort((a,b)=>a.seq-b.seq);
+    if(!caps.length) throw new Error('no captions');
+
+    const lines = caps.map(c=>`${c.ko} ||| ${c.zh}`).join('\n');
+    const termList = [...new Set(caps.flatMap(c=>c.hits.map(h=>`${h.ko}→${h.zh}`)))].join('；');
+
+    const prompt = `你是一名理工科课堂复习笔记生成器。基于以下中韩对照课堂字幕，生成结构化复习笔记。
+严格遵守：
+1. 只基于字幕内容，不添加外部知识。
+2. 专业术语使用给定标准译名。
+3. 输出严格为以下 JSON，不要包含 markdown 代码块标记或任何其他文字。
+{
+  "corePoints":[{"topic":"","summary":""}],
+  "keyTerms":[{"ko":"","zh":"","context":""}],
+  "conclusions":[""],
+  "masteredPoints":[""],
+  "pendingTerms":[{"ko":"","zh":"","reason":""}]
+}
+
+已知术语：${termList || '无'}
+
+字幕：
+${lines.slice(0, 18000)}`;
+
+    const res = await fetch(settings.llmBase.replace(/\/+$/,'')+'/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+settings.llmKey},
+      body:JSON.stringify({
+        model: settings.llmModel || 'gpt-4o-mini',
+        messages:[
+          {role:'system',content:'你只输出合法 JSON，不输出任何其他内容。'},
+          {role:'user',content:prompt}
+        ],
+        temperature:0.2,
+        max_tokens:2500
+      })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    let text=data.choices?.[0]?.message?.content?.trim()||'';
+    text=text.replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/,'').trim();
+    let parsed;
+    try{ parsed=JSON.parse(text); }
+    catch(e){
+      const m=text.match(/\{[\s\S]*\}/);
+      if(m) parsed=JSON.parse(m[0]); else throw new Error('JSON 解析失败');
+    }
+
+    const summary={sessionId,content:parsed,generatedAt:Date.now(),model:settings.llmModel||'llm'};
+    await idbPut('summaries',summary);
+    await idbPut('sessions',{...s,summaryStatus:'done'});
+    return summary;
+  }catch(e){
+    console.warn('总结失败',e);
+    try{
+      const s=await idbGet('sessions',sessionId);
+      if(s) await idbPut('sessions',{...s,summaryStatus:'failed'});
+    }catch(_){}
+    throw e;
+  }finally{
+    summaryInFlight.delete(sessionId);
+  }
+}
+
+/* ============================================================
+   8. 音频拼接与回放
+   ============================================================ */
+async function buildAudioURL(sessionId){
+  const chunks = await idbAllByIndex('audioChunks','sessionId',sessionId);
+  if(!chunks.length) return null;
+  chunks.sort((a,b)=>a.seq-b.seq);
+  const mime = chunks[0].mime || 'audio/webm';
+  const blob = new Blob(chunks.map(c=>c.data),{type:mime});
+  return URL.createObjectURL(blob);
+}
+
+/* ============================================================
+   9. 归档页
+   ============================================================ */
+async function renderArchive(){
+  const courseFilter = $('#filterCourse').value;
+  const from = $('#filterDateFrom').value;
+  const to = $('#filterDateTo').value;
+
+  let sessions = await idbAll('sessions');
+  sessions.sort((a,b)=>b.startAt-a.startAt);
+
+  if(courseFilter) sessions=sessions.filter(s=>s.courseId===courseFilter);
+  if(from) sessions=sessions.filter(s=>s.date>=from);
+  if(to) sessions=sessions.filter(s=>s.date<=to);
+
+  const box=$('#sessionList');
+  if(!sessions.length){
+    box.innerHTML='<div class="empty">还没有课时记录。<br>完成一次课堂收音并保存后，记录会出现在这里。</div>';
+    return;
+  }
+  box.innerHTML=sessions.map(s=>{
+    const badge = s.summaryStatus==='done'?'<span class="badge done">已总结</span>'
+      : s.summaryStatus==='failed'?'<span class="badge pending">总结失败</span>'
+      : '<span class="badge pending">待总结</span>';
+    return `<div class="session-item" data-id="${s.id}">
+      <div class="si-icon">🎧</div>
+      <div class="si-body">
+        <div class="si-title">${esc(courseName(s.courseId)||'未归类')} · ${fmtDate(s.startAt)} ${fmtTime(s.startAt)}</div>
+        <div class="si-sub">${Math.round(s.durationSec/60)} 分钟 · ${s.captionCount||0} 句 · ${badge}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('.session-item').forEach(el=>{
+    el.addEventListener('click',()=>openSessionDetail(el.dataset.id));
+  });
+}
+
+async function openSessionDetail(id){
+  const s=await idbGet('sessions',id);
+  if(!s) return toast('记录不存在');
+  const caps=(await idbAllByIndex('captions','sessionId',id)).sort((a,b)=>a.seq-b.seq);
+  let summary=null;
+  try{ summary=await idbGet('summaries',id); }catch(_){}
+
+  const audioURL=await buildAudioURL(id);
+
+  let summaryHTML='<div class="empty" style="padding:20px">尚未生成总结。点击下方按钮生成。</div>';
+  if(summary?.content){
+    const c=summary.content;
+    summaryHTML=`
+      ${c.corePoints?.length?`<div class="summary-block"><h4>核心知识点</h4><ul>${c.corePoints.map(p=>`<li><b>${esc(p.topic||'')}</b> ${esc(p.summary||'')}</li>`).join('')}</ul></div>`:''}
+      ${c.keyTerms?.length?`<div class="summary-block"><h4>重点术语</h4><div>${c.keyTerms.map(t=>`<span class="term-pill">${esc(t.ko||'')} → ${esc(t.zh||'')}</span>`).join('')}</div></div>`:''}
+      ${c.conclusions?.length?`<div class="summary-block"><h4>课堂结论</h4><ul>${c.conclusions.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+      ${c.pendingTerms?.length?`<div class="summary-block"><h4>待巩固术语</h4><div>${c.pendingTerms.map(t=>`<span class="term-pill pending">${esc(t.ko||t)} → ${esc(t.zh||'')}</span>`).join('')}</div></div>`:''}
+    `;
+  }
+
+  $('#modalBody').innerHTML=`
+    <h2>${esc(courseName(s.courseId)||'未归类')} · ${fmtDate(s.startAt)}</h2>
+    <div class="detail-sec">
+      <h3>原声回放</h3>
+      ${audioURL?`<audio class="audio-player" controls src="${audioURL}" id="detailAudio"></audio>`:'<div class="empty" style="padding:12px">无音频数据</div>'}
+    </div>
+    <div class="detail-sec">
+      <h3>AI 课程总结</h3>
+      <div id="summaryArea">${summaryHTML}</div>
+      <button class="btn block primary sm" id="btnGenSummary" style="margin-top:8px">
+        ${summary?'重新生成总结':'生成总结'}
+      </button>
+    </div>
+    <div class="detail-sec">
+      <h3>中韩对照译文 · ${caps.length} 句</h3>
+      <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:10px">
+        ${caps.map(c=>`<div class="seg" data-start="${c.startMs}">
+          <div class="ko">${highlightKo(c.ko,c.hits||[])}</div>
+          <div class="zh">${highlightZh(c.zh,c.hits||[])}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn sm" id="btnExpTxt">导出双语 TXT</button>
+      <button class="btn sm" id="btnExpMd">导出总结 MD</button>
+      ${s.courseId?'':`<button class="btn sm primary" id="btnAssignCourse">归类到课程</button>`}
+      <button class="btn sm danger" id="btnDelSession" style="margin-left:auto">删除</button>
+    </div>
+  `;
+  $('#modalMask').classList.add('show');
+
+  // 字幕点击 seek
+  const audio=$('#detailAudio');
+  if(audio){
+    $('#modalBody').querySelectorAll('.seg[data-start]').forEach(el=>{
+      el.style.cursor='pointer';
+      el.addEventListener('click',()=>{
+        audio.currentTime=Number(el.dataset.start)/1000;
+        audio.play().catch(()=>{});
+      });
+    });
+  }
+
+  // 生成总结
+  $('#btnGenSummary').addEventListener('click',async()=>{
+    if(!settings.llmKey || !settings.llmBase) return toast('请先在设置中填写 LLM API');
+    const btn=$('#btnGenSummary'); btn.disabled=true; btn.textContent='生成中…';
+    try{
+      await generateSummary(id);
+      $('#modalMask').classList.remove('show');
+      openSessionDetail(id);
+      toast('总结已生成');
+    }catch(e){ toast('总结失败：'+e.message); btn.disabled=false; btn.textContent='重新生成总结'; }
+  });
+
+  // 导出
+  $('#btnExpTxt').addEventListener('click',()=>{
+    const lines=caps.map((c,i)=>`${i+1}. [${(c.startMs/1000).toFixed(1)}s]\n韩：${c.ko}\n中：${c.zh}\n`);
+    download(`双语字幕_${fmtDate(s.startAt)}.txt`,lines.join('\n'));
+  });
+  $('#btnExpMd').addEventListener('click',()=>{
+    if(!summary?.content) return toast('还没有总结');
+    const c=summary.content; const md=[];
+    md.push('# 课程复习笔记','',`课程：${courseName(s.courseId)||'未归类'}`,`日期：${fmtDate(s.startAt)}`,'');
+    if(c.corePoints?.length){ md.push('## 核心知识点',''); c.corePoints.forEach(p=>md.push(`### ${p.topic||''}`,'',p.summary||'','')); }
+    if(c.keyTerms?.length){ md.push('## 重点术语',''); c.keyTerms.forEach(t=>md.push(`- ${t.ko||''} → ${t.zh||''}  ${t.context?'（'+t.context+'）':''}`)); md.push(''); }
+    if(c.conclusions?.length){ md.push('## 课堂结论',''); c.conclusions.forEach(x=>md.push('- '+x)); md.push(''); }
+    if(c.pendingTerms?.length){ md.push('## 待巩固术语',''); c.pendingTerms.forEach(t=>md.push(`- ${t.ko||t} → ${t.zh||''}`)); md.push(''); }
+    download(`复习笔记_${fmtDate(s.startAt)}.md`,md.join('\n'),'text/markdown;charset=utf-8');
+  });
+
+  // 归类
+  $('#btnAssignCourse')?.addEventListener('click',()=>{
+    const opts=courses.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    if(!opts) return toast('请先在课程页添加课程');
+    $('#modalBody').insertAdjacentHTML('beforeend',`
+      <div style="margin-top:12px;padding:12px;background:var(--surface-2);border-radius:10px">
+        <label style="font-size:12px;color:var(--dim)">选择课程</label>
+        <select id="assignSelect" style="margin-top:6px">${opts}</select>
+        <button class="btn primary sm block" id="assignConfirm" style="margin-top:8px">确认归类</button>
+      </div>`);
+    $('#assignConfirm').addEventListener('click',async()=>{
+      const cid=$('#assignSelect').value;
+      await idbPut('sessions',{...s,courseId:cid,autoMatched:false});
+      rememberMatchPref(s.endAt,cid);
+      $('#modalMask').classList.remove('show');
+      renderArchive(); toast('已归类到「'+courseName(cid)+'」');
+    });
+  });
+
+  // 删除
+  $('#btnDelSession').addEventListener('click',async()=>{
+    if(!confirm('删除这节课的音频、字幕和总结？不可恢复。')) return;
+    const chunks=await idbAllByIndex('audioChunks','sessionId',id);
+    for(const c of chunks) await idbDel('audioChunks',c.id);
+    for(const c of caps) await idbDel('captions',c.id);
+    await idbDel('summaries',id).catch(()=>{});
+    await idbDel('sessions',id);
+    $('#modalMask').classList.remove('show');
+    renderArchive(); toast('已删除');
+  });
+}
+
+/* ============================================================
+   10. 课程表 UI
+   ============================================================ */
+const WEEK_NAMES=['日','一','二','三','四','五','六'];
+function fmtMin(m){ return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
+
+function renderCourses(){
+  const box=$('#courseList');
+  if(!courses.length){
+    box.innerHTML='<div class="empty">还没有课程。点击右上角「＋ 新增课程」录入你的课表。</div>';
+    return;
+  }
+  box.innerHTML=courses.map(c=>{
+    const slots=(c.slots||[]).map(s=>
+      `周${WEEK_NAMES[s.weekday]} ${fmtMin(s.startMin)}–${fmtMin(s.endMin)} · 第${s.fromWeek}-${s.toWeek}周${s.parity==='odd'?'（单）':s.parity==='even'?'（双）':''}`
+    ).join('<br>')||'未设置时间段';
+    return `<div class="course-row">
+      <span class="course-dot" style="background:${c.color||'#4da3ff'}"></span>
+      <div class="course-info"><div class="course-name">${esc(c.name)}</div><div class="course-slots">${slots}</div></div>
+      <button class="btn sm ghost course-edit" data-id="${c.id}">编辑</button>
+      <button class="btn sm danger course-del" data-id="${c.id}">删</button>
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('.course-del').forEach(b=>b.addEventListener('click',()=>{
+    if(!confirm('删除这门课程？已有课时记录不会被删除，但会显示为未归类。')) return;
+    courses=courses.filter(c=>c.id!==b.dataset.id);
+    saveCourses(); renderCourses(); refreshCourseFilter();
+  }));
+  box.querySelectorAll('.course-edit').forEach(b=>b.addEventListener('click',()=>editCourse(b.dataset.id)));
+}
+
+function editCourse(id){
+  const c=courses.find(x=>x.id===id);
+  if(!c) return;
+  const slot=c.slots?.[0]||{weekday:1,startMin:540,endMin:630,fromWeek:1,toWeek:16,parity:'all'};
+  $('#modalBody').innerHTML=`
+    <h2>编辑课程</h2>
+    <div class="field"><label>课程名称</label><input id="ecName" value="${esc(c.name)}"></div>
+    <div class="row-2">
+      <div class="field"><label>星期</label><select id="ecWeekday">${WEEK_NAMES.map((w,i)=>`<option value="${i}" ${i===slot.weekday?'selected':''}>周${w}</option>`).join('')}</select></div>
+      <div class="field"><label>单双周</label><select id="ecParity">
+        <option value="all" ${slot.parity==='all'?'selected':''}>每周</option>
+        <option value="odd" ${slot.parity==='odd'?'selected':''}>单周</option>
+        <option value="even" ${slot.parity==='even'?'selected':''}>双周</option>
+      </select></div>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>开始时间</label><input type="time" id="ecStart" value="${fmtMin(slot.startMin)}"></div>
+      <div class="field"><label>结束时间</label><input type="time" id="ecEnd" value="${fmtMin(slot.endMin)}"></div>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>起始周</label><input type="number" id="ecFrom" value="${slot.fromWeek}" min="1" max="30"></div>
+      <div class="field"><label>结束周</label><input type="number" id="ecTo" value="${slot.toWeek}" min="1" max="30"></div>
+    </div>
+    <button class="btn primary block" id="ecSave">保存</button>
+  `;
+  $('#modalMask').classList.add('show');
+  $('#ecSave').addEventListener('click',()=>{
+    const name=$('#ecName').value.trim(); if(!name) return toast('请输入课程名');
+    const [sh,sm]=$('#ecStart').value.split(':').map(Number);
+    const [eh,em]=$('#ecEnd').value.split(':').map(Number);
+    c.name=name;
+    c.slots=[{
+      weekday:Number($('#ecWeekday').value),
+      startMin:sh*60+sm, endMin:eh*60+em,
+      fromWeek:Number($('#ecFrom').value)||1, toWeek:Number($('#ecTo').value)||16,
+      parity:$('#ecParity').value
+    }];
+    saveCourses(); renderCourses(); refreshCourseFilter();
+    $('#modalMask').classList.remove('show'); toast('已保存');
+  });
+}
+
+$('#btnAddCourse').addEventListener('click',()=>{
+  const c={id:uid('course'),name:'',color:COURSE_COLORS[courses.length%COURSE_COLORS.length],slots:[]};
+  courses.push(c); saveCourses(); editCourse(c.id);
+});
+
+function refreshCourseFilter(){
+  const sel=$('#filterCourse'); const cur=sel.value;
+  sel.innerHTML='<option value="">全部课程</option>'+courses.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  if(courses.some(c=>c.id===cur)) sel.value=cur;
+}
+
+/* ============================================================
+   11. 设置 UI
+   ============================================================ */
+function loadSettingsUI(){
+  $('#setSemesterStart').value=settings.semesterStart||'';
+  $('#setLlmBase').value=settings.llmBase||'';
+  $('#setLlmKey').value=settings.llmKey||'';
+  $('#setLlmModel').value=settings.llmModel||'';
+  $('#setTranslateMode').value=settings.translateMode||'llm';
+}
+function bindSettings(){
+  $('#setSemesterStart').addEventListener('change',e=>{ settings.semesterStart=e.target.value; saveSettings(); });
+  $('#setLlmBase').addEventListener('change',e=>{ settings.llmBase=e.target.value.trim(); saveSettings(); });
+  $('#setLlmKey').addEventListener('change',e=>{ settings.llmKey=e.target.value.trim(); saveSettings(); });
+  $('#setLlmModel').addEventListener('change',e=>{ settings.llmModel=e.target.value.trim(); saveSettings(); });
+  $('#setTranslateMode').addEventListener('change',e=>{ settings.translateMode=e.target.value; saveSettings(); });
+  $('#btnClearAllData').addEventListener('click',async()=>{
+    if(!confirm('清空所有课时、音频和总结？不可恢复。')) return;
+    const db=await openDB();
+    const tx=db.transaction(['sessions','captions','audioChunks','summaries'],'readwrite');
+    tx.objectStore('sessions').clear(); tx.objectStore('captions').clear();
+    tx.objectStore('audioChunks').clear(); tx.objectStore('summaries').clear();
+    tx.oncomplete=()=>{ renderArchive(); toast('已清空'); };
+  });
+}
+
+/* ============================================================
+   12. 术语库 UI
+   ============================================================ */
+function openDictModal(){
+  $('#modalBody').innerHTML=`
+    <h2>术语库</h2>
+    <div class="field"><label>韩语原文（多个变体用逗号分隔）</label><input id="dictKo" placeholder="예: 환원력, 환원력이"></div>
+    <div class="field"><label>标准中文译名</label><input id="dictZh" placeholder="例如：还原力"></div>
+    <div class="field"><label>学科</label><select id="dictSubject"><option value="">通用</option><option>制药工程</option><option>生物</option><option>化学</option></select></div>
+    <button class="btn primary block" id="dictAdd">添加并立即生效</button>
+    <div style="margin-top:16px" id="dictCustomList"></div>
+    <div style="margin-top:16px">
+      <h3 style="font-size:12px;color:var(--dim);margin-bottom:6px">内置术语（${BUILTIN_TERMS.length} 条）</h3>
+      <div style="font-size:12px;color:var(--dim);line-height:1.9;max-height:160px;overflow-y:auto">
+        ${BUILTIN_TERMS.slice(0,40).map(t=>`${esc(t.ko[0])} → ${esc(t.zh)} <span style="opacity:.5">(${t.subject})</span>`).join('<br>')}
+      </div>
+    </div>
+  `;
+  $('#modalMask').classList.add('show');
+  renderCustomDictList();
+  $('#dictAdd').addEventListener('click',()=>{
+    const koRaw=$('#dictKo').value.trim(), zh=$('#dictZh').value.trim();
+    if(!koRaw||!zh) return toast('请填写韩语和中文');
+    const ko=koRaw.split(/[,，]/).map(s=>s.trim()).filter(Boolean);
+    customDict.unshift({ko,zh,subject:$('#dictSubject').value});
+    saveDict(); refreshKoIndex(); renderCustomDictList();
+    $('#dictKo').value=''; $('#dictZh').value='';
+    toast('术语已添加');
+  });
+}
+function renderCustomDictList(){
+  const box=$('#dictCustomList'); if(!box) return;
+  if(!customDict.length){ box.innerHTML='<div style="font-size:12px;color:var(--dim)">还没有自定义词条。</div>'; return; }
+  box.innerHTML=customDict.map((d,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px">
+    <span style="flex:1;color:var(--dim)">${esc(d.ko.join(', '))}</span>
+    <span style="flex:1">${esc(d.zh)}</span>
+    <button style="color:var(--err);padding:2px 6px" data-i="${i}">✕</button>
+  </div>`).join('');
+  box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    customDict.splice(Number(b.dataset.i),1); saveDict(); refreshKoIndex(); renderCustomDictList();
+  }));
+}
+
+/* ============================================================
+   13. 悬浮字幕
+   ============================================================ */
+const floatCard=$('#floatCard'), floatFab=$('#floatFab'), floatHead=$('#floatHead'), grip=$('#resizeGrip');
+let fDrag=false, fDX=0, fDY=0, fResize=false, fW=0, fH=0, fSX=0, fSY=0;
+
+function showFloat(){ floatCard.classList.add('show'); floatFab.classList.add('show'); }
+function hideFloat(){ floatCard.classList.remove('show'); floatFab.classList.remove('show'); }
+$('#btnFloatToggle').addEventListener('click',()=>{ floatCard.classList.contains('show')?hideFloat():showFloat(); });
+$('#floatClose').addEventListener('click',hideFloat);
+floatFab.addEventListener('click',showFloat);
+
+floatHead.addEventListener('pointerdown',e=>{
+  if(e.target.closest('button')) return;
+  fDrag=true; const r=floatCard.getBoundingClientRect(); fDX=e.clientX-r.left; fDY=e.clientY-r.top;
+  floatHead.setPointerCapture(e.pointerId);
+});
+floatHead.addEventListener('pointermove',e=>{
+  if(!fDrag) return;
+  let x=e.clientX-fDX, y=e.clientY-fDY;
+  x=Math.max(4,Math.min(innerWidth-floatCard.offsetWidth-4,x));
+  y=Math.max(4,Math.min(innerHeight-floatCard.offsetHeight-4,y));
+  floatCard.style.left=x+'px'; floatCard.style.top=y+'px';
+  floatCard.style.right='auto'; floatCard.style.bottom='auto';
+});
+floatHead.addEventListener('pointerup',e=>{ fDrag=false; try{floatHead.releasePointerCapture(e.pointerId);}catch(_){}});
+
+grip.addEventListener('pointerdown',e=>{
+  e.stopPropagation(); fResize=true; fW=floatCard.offsetWidth; fH=floatCard.offsetHeight;
+  fSX=e.clientX; fSY=e.clientY; grip.setPointerCapture(e.pointerId);
+});
+grip.addEventListener('pointermove',e=>{
+  if(!fResize) return;
+  floatCard.style.width=Math.max(220,fW+(e.clientX-fSX))+'px';
+  floatCard.style.height=Math.max(90,fH+(e.clientY-fSY))+'px';
+});
+grip.addEventListener('pointerup',e=>{ fResize=false; try{grip.releasePointerCapture(e.pointerId);}catch(_){}});
+
+/* ============================================================
+   14. 导航与初始化
+   ============================================================ */
+$$('.nav button').forEach(b=>b.addEventListener('click',()=>{
+  $$('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  $('#'+b.dataset.page).classList.add('active');
+  if(b.dataset.page==='pageArchive') renderArchive();
+  if(b.dataset.page==='pageCourses') renderCourses();
+}));
+
+$('#filterCourse').addEventListener('change',renderArchive);
+$('#filterDateFrom').addEventListener('change',renderArchive);
+$('#filterDateTo').addEventListener('change',renderArchive);
+
+$('#modalMask').addEventListener('click',e=>{ if(e.target===$('#modalMask')) $('#modalMask').classList.remove('show'); });
+
+$('#btnStart').addEventListener('click',()=>{ isRecording?stopRecording():startRecording(); });
+$('#btnDict').addEventListener('click',openDictModal);
+$('#btnExportLive').addEventListener('click',()=>{
+  if(!currentSegments.length) return toast('还没有可导出的字幕');
+  const lines=currentSegments.map((s,i)=>`${i+1}. [${(s.startMs/1000).toFixed(1)}s]\n韩：${s.ko}\n中：${s.zh}\n`);
+  download(`实时字幕_${fmtDate(Date.now())}.txt`,lines.join('\n'));
+});
+
+window.addEventListener('beforeunload',e=>{
+  if(isRecording){ e.preventDefault(); e.returnValue=''; }
+});
+
+/* 启动 */
+(async function boot(){
+  loadSettingsUI(); bindSettings(); refreshCourseFilter(); renderCourses();
+  try{ await openDB(); }catch(e){ console.error('IndexedDB 不可用', e); toast('IndexedDB 不可用，数据无法保存'); }
+  if(!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)){
+    setStatus('提示：当前浏览器不支持网页韩语识别，仍可录音存档','');
+  }
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
